@@ -8,13 +8,11 @@ use Illuminate\Support\Facades\Auth;
 
 class LoginController extends Controller
 {
-    // Menampilkan halaman login
     public function index()
     {
         return view('auth.login');
     }
 
-    // Memproses masuk ke sistem
     public function authenticate(Request $request)
     {
         // 1. Validasi input
@@ -23,35 +21,32 @@ class LoginController extends Controller
             'password' => 'required',
         ]);
 
-        // 2. Coba login (menggunakan username dan password)
+        // 2. Proses Login
         if (Auth::attempt($credentials)) {
             $request->session()->regenerate();
             
-            // --- PERBAIKAN DI SINI: LOGIKA PENGALIHAN BERDASARKAN ROLE ---
-            $user = Auth::user(); // Ambil data user yang sedang login
+            $user = Auth::user();
 
+            // 3. Logika Pengalihan berdasarkan ROLE
+            // Menggunakan intended() lebih aman agar user kembali ke halaman yang mereka tuju sebelumnya
             if ($user->role === 'admin') {
-                // Jika dia Ketua/Admin, lempar ke dashboard admin
-                return redirect()->route('admin.dashboard');
+                return redirect()->intended(route('admin.dashboard'));
             } 
             
-            // Jika dia Petani (default), lempar ke dashboard petani
-            return redirect()->route('petani.dashboard');
-            // -----------------------------------------------------------
+            return redirect()->intended(route('petani.dashboard'));
         }
 
-        // Jika gagal, kembalikan dengan pesan error
+        // 4. Jika gagal, kembalikan dengan pesan error yang jelas
         return back()->withErrors([
-            'username' => 'Username atau password salah.',
+            'loginError' => 'Username atau password salah.',
         ])->onlyInput('username');
     }
 
-    // Fungsi Logout
     public function logout(Request $request)
     {
         Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
-        return redirect('/login');
+        return redirect('/login')->with('success', 'Anda telah berhasil keluar.');
     }
 }

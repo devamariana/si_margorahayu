@@ -8,53 +8,32 @@ use Illuminate\Notifications\Notifiable;
 
 class User extends Authenticatable
 {
-    /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable;
 
-    /**
-     * Hubungkan model ini ke tabel 'petanis'
-     */
-    protected $table = 'petanis';
+    // 1. PASTIKAN INI KE TABEL USERS (Bukan petanis lagi)
+    protected $table = 'users';
 
-    /**
-     * TAMBAHAN: Jika di SQLyog kolom kuncimu bukan bernama 'id', 
-     * tuliskan namanya di sini (contoh: 'id_petani'). 
-     * Jika tetap 'id', baris ini tidak akan merusak apapun.
-     */
-    protected $primaryKey = 'id'; 
-
-    /**
-     * The attributes that are mass assignable.
-     */
+    // 2. ISI HANYA UNTUK LOGIN
     protected $fillable = [
-        'username', 'password', 'role', 'no_hp', 
-        'nik', 'nama_lengkap', 'luas_lahan', 'alamat', 
-        'foto_ktp', 'foto_kk', 'status' // Tambahkan 'status' di sini
+        'username', 
+        'password', 
+        'role',
     ];
 
-    /**
-     * Beritahu Laravel login menggunakan username, bukan email
-     */
-    public function getAuthIdentifierName()
+    // 3. RELASI KE TABEL PETANI (Untuk ambil profil)
+    public function petani()
     {
-        return 'username';
+        return $this->hasOne(Petani::class, 'user_id');
     }
 
-    /**
-     * The attributes that should be hidden for serialization.
-     */
     protected $hidden = [
         'password',
         'remember_token',
     ];
 
-    /**
-     * Get the attributes that should be cast.
-     */
     protected function casts(): array
     {
         return [
-            'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
     }

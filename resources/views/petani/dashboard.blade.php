@@ -4,11 +4,35 @@
 
 @section('content')
 <div class="space-y-6">
+
+    {{-- FITUR NOTIFIKASI OTOMATIS DARI DATABASE --}}
+    @if(isset($bibitTerbaru))
+    <div class="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-lg shadow-md animate-bounce">
+        <div class="flex items-center justify-between">
+            <div class="flex items-center">
+                <i class="fas fa-bullhorn text-blue-500 text-xl mr-3"></i>
+                <p class="text-sm text-blue-800 font-bold">
+                    INFO STOK: Bibit <span class="text-blue-600 underline">{{ $bibitTerbaru->nama_bibit }}</span> baru saja ditambahkan! Segera cek sebelum kehabisan.
+                </p>
+            </div>
+            <button onclick="this.parentElement.parentElement.remove()" class="text-blue-500 hover:text-blue-800">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+    </div>
+    @endif
+
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {{-- BAGIAN STATUS AKUN - DISINKRONKAN KE KATA 'disetujui' --}}
         <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-100 text-center">
             <p class="text-gray-500 text-sm mb-2">Status Akun</p>
-            <p class="text-2xl font-bold text-green-600">Terverifikasi</p>
+            @if(Auth::user()->status == 'disetujui')
+                <p class="text-2xl font-bold text-green-600">Terverifikasi</p>
+            @else
+                <p class="text-2xl font-bold text-orange-600">Menunggu Verifikasi</p>
+            @endif
         </div>
+
         <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-100 text-center">
             <p class="text-gray-500 text-sm mb-2">Total Belanja Bibit</p>
             <p class="text-2xl font-bold text-gray-800">Rp 2.500.000</p>
@@ -68,11 +92,11 @@
         new Chart(ctx, {
             type: 'line',
             data: {
-                labels: ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni'], // Nama Bulan
+                labels: ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni'], 
                 datasets: [{
                     label: 'Jumlah Pembelian (kg)',
-                    data: [25, 45, 30, 60, 40, 75], // Data Dummy
-                    borderColor: '#2D6A4F', // Hijau Pertanian
+                    data: [25, 45, 30, 60, 40, 75], 
+                    borderColor: '#2D6A4F', 
                     backgroundColor: 'rgba(45, 106, 79, 0.1)',
                     borderWidth: 3,
                     tension: 0.4,

@@ -1,9 +1,10 @@
-@extends('layouts.admin_layout')
+@extends('layouts.admin_layout') {{-- PERBAIKAN: Pastikan path ke layout admin benar --}}
 
-@section('title', 'Dashboard Overview')
+@section('title', 'Dashboard Admin Overview')
 
 @section('content')
 <div class="space-y-6">
+    {{-- Bagian Statistik --}}
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-100 text-center">
             <p class="text-gray-500 text-xs font-bold uppercase mb-2">Total Petani</p>
@@ -19,24 +20,26 @@
         </div>
     </div>
 
+    {{-- Bagian Grafik --}}
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
-            <h3 class="text-sm font-bold text-gray-700 mb-4 uppercase tracking-wider">Distribusi Penjualan Bibit per Bulan</h3>
+            <h3 class="text-sm font-bold text-gray-700 mb-4 uppercase tracking-wider">Distribusi Penjualan Bibit</h3>
             <div class="h-64 relative border-2 border-gray-50 rounded-lg">
                 <canvas id="adminSalesChart"></canvas>
             </div>
         </div>
         <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
-            <h3 class="text-sm font-bold text-gray-700 mb-4 uppercase tracking-wider text-center">Persentase Status Pembayaran</h3>
+            <h3 class="text-sm font-bold text-gray-700 mb-4 uppercase tracking-wider text-center">Status Pembayaran</h3>
             <div class="h-64 relative border-2 border-gray-50 rounded-lg flex justify-center">
                 <canvas id="adminStatusChart"></canvas>
             </div>
         </div>
     </div>
 
+    {{-- Tabel Transaksi --}}
     <div class="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden">
         <div class="p-4 bg-gray-50 border-b border-gray-100">
-            <h3 class="text-sm font-bold text-gray-700">5 Transaksi Terbaru</h3>
+            <h3 class="text-sm font-bold text-gray-700">5 Transaksi Terbaru (Panel Admin)</h3>
         </div>
         <div class="overflow-x-auto text-xs">
             <table class="w-full text-left">
@@ -63,10 +66,10 @@
     </div>
 </div>
 
+{{-- Script Chart.js --}}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
     document.addEventListener("DOMContentLoaded", function() {
-        // Logika Chart tetap sama seperti kode Anda
         new Chart(document.getElementById('adminSalesChart'), {
             type: 'line',
             data: {

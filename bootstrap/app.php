@@ -12,6 +12,12 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
+        
+        // --- TAMBAHKAN INI AGAR 'checkRole' DI RECOGNIZED ---
+        $middleware->alias([
+            'checkRole' => \App\Http\Middleware\CheckRole::class,
+        ]);
+
         // Mengarahkan tamu yang tidak terautentikasi kembali ke login
         $middleware->redirectGuestsTo('/login');
 
