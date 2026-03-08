@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\Models\User; // Tambahkan ini
+use Illuminate\Support\Facades\Hash; // Tambahkan ini
 
 class LoginController extends Controller
 {
@@ -16,10 +18,12 @@ class LoginController extends Controller
     public function authenticate(Request $request)
     {
         // 1. Validasi input
-        $credentials = $request->validate([
+        $request->validate([
             'username' => 'required',
             'password' => 'required',
         ]);
+
+        $credentials = $request->only('username', 'password');
 
         // 2. Proses Login
         if (Auth::attempt($credentials)) {
@@ -28,7 +32,6 @@ class LoginController extends Controller
             $user = Auth::user();
 
             // 3. Logika Pengalihan berdasarkan ROLE
-            // Menggunakan intended() lebih aman agar user kembali ke halaman yang mereka tuju sebelumnya
             if ($user->role === 'admin') {
                 return redirect()->intended(route('admin.dashboard'));
             } 
@@ -36,9 +39,17 @@ class LoginController extends Controller
             return redirect()->intended(route('petani.dashboard'));
         }
 
-        // 4. Jika gagal, kembalikan dengan pesan error yang jelas
+        // --- TAMBAHAN DEBUG UNTUK NOVAN ---
+        // Jika gagal, kita cek apakah usernamenya ada di DB tapi passwordnya yang salah
+        $userCheck = User::where('username', $request->username)->first();
+        if (!$userCheck) {
+            $errorMessage = 'Username tidak terdaftar di database.';
+        } else {
+            $errorMessage = 'Password yang Anda masukkan salah.';
+        }
+
         return back()->withErrors([
-            'loginError' => 'Username atau password salah.',
+            'username' => $errorMessage,
         ])->onlyInput('username');
     }
 

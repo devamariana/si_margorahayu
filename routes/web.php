@@ -6,6 +6,7 @@ use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Petani\PetaniController;
 use App\Http\Controllers\Admin\BibitController;
+use App\Http\Controllers\Petani\TransaksiController; 
 
 // --- HALAMAN PUBLIK (Bisa diakses tanpa login) ---
 Route::get('/', function () {
@@ -28,19 +29,22 @@ Route::middleware(['auth'])->group(function () {
 
     // 1. KHUSUS ROLE: ADMIN
     Route::middleware(['checkRole:admin'])->group(function () {
-        Route::get('/admin/dashboard', function () {
-            return view('layouts.admin.dashboard'); 
-        })->name('admin.dashboard');
+        Route::get('/admin/dashboard', [AdminController::class, 'index'])->name('admin.dashboard');
 
         // Kelola Data Petani
         Route::get('/admin/data-petani', [AdminController::class, 'dataPetani'])->name('admin.data_petani');
         Route::post('/admin/verifikasi-petani/{id}', [AdminController::class, 'verifikasiPetani'])->name('admin.verifikasi_petani');
         Route::delete('/admin/petani/hapus/{id}', [AdminController::class, 'hapusPetani'])->name('admin.hapus_petani');
+        Route::post('/transaksi/store', [TransaksiController::class, 'store'])->name('petani.transaksi.store');
 
         // Kelola Data Bibit
         Route::get('/admin/data-bibit', [BibitController::class, 'index'])->name('admin.data_bibit');
         Route::post('/admin/data-bibit/store', [BibitController::class, 'store'])->name('admin.store_bibit');
         Route::delete('/admin/data-bibit/destroy/{id}', [BibitController::class, 'destroy'])->name('admin.data_bibit.destroy');
+
+        // Pindah Jatah (Admin)
+        Route::get('/admin/pindah-jatah', [AdminController::class, 'pindahJatah'])->name('admin.pindah_jatah');
+        Route::post('/admin/pindah-jatah/proses', [AdminController::class, 'prosesPindahJatah'])->name('admin.proses_pindah');
 
         // Menu Admin Lainnya
         Route::get('/admin/data-periode', function () { return view('layouts.admin.data_periode'); })->name('admin.data_periode');
@@ -51,10 +55,17 @@ Route::middleware(['auth'])->group(function () {
     // 2. KHUSUS ROLE: PETANI
     Route::middleware(['checkRole:petani'])->group(function () {
         Route::get('/dashboard-petani', [PetaniController::class, 'dashboard'])->name('petani.dashboard');
+        
+        // Profil Petani
         Route::get('/profil-petani', [PetaniController::class, 'index'])->name('petani.profil');
         Route::post('/profil-petani/update', [PetaniController::class, 'updateProfil'])->name('petani.update');
 
-        Route::get('/beli-bibit', function () { return view('petani.beli_bibit'); })->name('petani.beli_bibit');
+        // REVISI: Kelola Lahan Petani (Banyak Lahan)
+        Route::get('/petani/lahan', [PetaniController::class, 'lahan'])->name('petani.lahan');
+        Route::post('/petani/lahan/store', [PetaniController::class, 'storeLahan'])->name('petani.store_lahan');
+
+        // Informasi & Beli Bibit
+        Route::get('/beli-bibit', [PetaniController::class, 'beliBibit'])->name('petani.beli_bibit');
         Route::get('/riwayat-pembelian', function () { return view('petani.riwayat'); })->name('petani.riwayat');
     });
 });

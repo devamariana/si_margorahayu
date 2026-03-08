@@ -4,89 +4,192 @@
 
 @section('content')
 <div class="space-y-8">
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 text-center">
-            <div class="w-full h-32 border-2 border-gray-200 rounded-lg flex items-center justify-center mb-4 relative">
-                <svg class="absolute inset-0 w-full h-full text-gray-200" preserveAspectRatio="none">
-                    <line x1="0" y1="0" x2="100%" y2="100%" stroke="currentColor" stroke-width="2" />
-                    <line x1="100%" y1="0" x2="0" y2="100%" stroke="currentColor" stroke-width="2" />
-                </svg>
+    {{-- BAGIAN PILIH LAHAN TERLEBIH DAHULU --}}
+    <div class="bg-white p-6 rounded-2xl shadow-sm border border-green-100 flex flex-col md:flex-row items-center justify-between gap-4">
+        <div class="flex items-center gap-4">
+            <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center text-[#2D6A4F]">
+                <i class="fas fa-map-marked-alt text-xl"></i>
             </div>
-            <h4 class="font-bold text-gray-800">Padi Unggul</h4>
-            <p class="text-xs text-gray-500 mb-2">Varietas Ciherang</p>
-            <p class="text-[#2D6A4F] font-bold mb-3">Rp 15.000/kg</p>
-            <span class="inline-block px-4 py-1 bg-green-100 text-green-700 text-xs font-bold rounded-full border border-green-200">Tersedia</span>
+            <div>
+                <h3 class="font-bold text-gray-800">Pilih Lahan yang Akan Ditanami</h3>
+                <p class="text-xs text-gray-500">Jatah bibit akan dihitung otomatis sesuai luas lahan yang dipilih.</p>
+            </div>
         </div>
-
-        <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 text-center">
-            <div class="w-full h-32 border-2 border-gray-200 rounded-lg flex items-center justify-center mb-4 relative">
-                <svg class="absolute inset-0 w-full h-full text-gray-200" preserveAspectRatio="none">
-                    <line x1="0" y1="0" x2="100%" y2="100%" stroke="currentColor" stroke-width="2" />
-                    <line x1="100%" y1="0" x2="0" y2="100%" stroke="currentColor" stroke-width="2" />
-                </svg>
-            </div>
-            <h4 class="font-bold text-gray-800">Jagung Manis</h4>
-            <p class="text-xs text-gray-500 mb-2">Varietas Bonanza</p>
-            <p class="text-[#2D6A4F] font-bold mb-3">Rp 10.000/kg</p>
-            <span class="inline-block px-4 py-1 bg-green-100 text-green-700 text-xs font-bold rounded-full border border-green-200">Tersedia</span>
-        </div>
-
-        <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 text-center border-l-4 border-l-[#2D6A4F]">
-            <div class="w-full h-32 border-2 border-gray-200 rounded-lg flex items-center justify-center mb-4 relative">
-                <svg class="absolute inset-0 w-full h-full text-gray-200" preserveAspectRatio="none">
-                    <line x1="0" y1="0" x2="100%" y2="100%" stroke="currentColor" stroke-width="2" />
-                    <line x1="100%" y1="0" x2="0" y2="100%" stroke="currentColor" stroke-width="2" />
-                </svg>
-            </div>
-            <h4 class="font-bold text-gray-800">Kedelai Hitam</h4>
-            <p class="text-xs text-gray-500 mb-2">Varietas Detam 1</p>
-            <p class="text-[#2D6A4F] font-bold mb-3">Rp 20.000/kg</p>
-            <span class="inline-block px-4 py-1 bg-green-100 text-green-700 text-xs font-bold rounded-full border border-green-200">Tersedia</span>
+        <div class="w-full md:w-1/3">
+            <select id="pilih-lahan" onchange="resetPilihanBibit()" class="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#2D6A4F] outline-none font-bold text-[#1B4332]">
+                <option value="" data-luas="0" data-tambahan="0">-- Pilih Lokasi Lahan --</option>
+                @foreach($lahans as $l)
+                    <option value="{{ $l->id }}" data-luas="{{ $l->luas_lahan }}" data-tambahan="{{ $petani->jatah_tambahan ?? 0 }}">
+                        {{ $l->nama_blok }} ({{ $l->luas_lahan }} m²)
+                    </option>
+                @endforeach
+            </select>
         </div>
     </div>
 
+    {{-- TAMPILAN PRODUK DARI DATABASE --}}
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        @forelse($semuaBibit as $b)
+        <div onclick="pilihBibit('{{ $b->id }}', '{{ $b->nama_bibit }}', {{ $b->harga_subsidi }})" 
+             class="bibit-card bg-white p-6 rounded-xl shadow-sm border border-gray-100 text-center hover:border-green-500 hover:shadow-md transition cursor-pointer relative overflow-hidden">
+            
+            <div class="w-full h-32 border-2 border-gray-100 rounded-lg flex items-center justify-center mb-4 overflow-hidden bg-gray-50">
+                @if($b->gambar)
+                    <img src="{{ asset('uploads/bibit/' . $b->gambar) }}" class="object-cover w-full h-full">
+                @else
+                    <div class="text-gray-300 flex flex-col items-center">
+                        <i class="fas fa-seedling text-4xl mb-1"></i>
+                        <span class="text-[10px]">Tanpa Gambar</span>
+                    </div>
+                @endif
+            </div>
+
+            <h4 class="font-bold text-gray-800 uppercase">{{ $b->nama_bibit }}</h4>
+            <p class="text-xs text-gray-500 mb-2">Varietas: {{ $b->jenis ?? '-' }}</p>
+            <p class="text-[#2D6A4F] font-black mb-3">Rp {{ number_format($b->harga_subsidi, 0, ',', '.') }}/kg</p>
+            
+            @if($b->stok > 0)
+                <span class="inline-block px-4 py-1 bg-green-100 text-green-700 text-xs font-bold rounded-full border border-green-200">Tersedia: {{ $b->stok }} kg</span>
+            @else
+                <span class="inline-block px-4 py-1 bg-red-100 text-red-700 text-xs font-bold rounded-full border border-red-200">Stok Habis</span>
+            @endif
+        </div>
+        @empty
+        <div class="col-span-3 bg-white p-10 rounded-xl text-center border border-dashed border-gray-300">
+            <i class="fas fa-box-open text-4xl text-gray-300 mb-3"></i>
+            <p class="text-gray-500 italic">Belum ada bibit yang tersedia dari Admin.</p>
+        </div>
+        @endforelse
+    </div>
+
+    {{-- RINGKASAN PESANAN DENGAN FORM --}}
     <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-8">
         <h3 class="text-xl font-bold text-gray-800 mb-6 uppercase tracking-wider">Ringkasan Pesanan</h3>
         
-        <div class="space-y-4">
-            <div class="flex justify-between text-gray-600 border-b pb-4">
-                <span>Bibit Padi Unggul (100 Kg)</span>
-                <span class="font-bold text-gray-800">Rp 1.500.000</span>
-            </div>
-            
-            <div class="flex justify-between items-center py-2">
-                <span class="text-lg font-bold text-gray-800">Total Pembayaran</span>
-                <span class="text-2xl font-bold text-[#2D6A4F]">Rp 1.500.000</span>
-            </div>
+        <form action="{{ route('petani.transaksi.store') }}" method="POST">
+            @csrf
+            {{-- Input Hidden untuk mengirim data ke TransaksiController --}}
+            <input type="hidden" name="lahan_id" id="input-lahan-id">
+            <input type="hidden" name="bibit_id" id="input-bibit-id">
+            <input type="hidden" name="jumlah_beli" id="input-jumlah-beli">
+            <input type="hidden" name="total_harga" id="input-total-harga">
 
-            <div class="mt-8">
-                <p class="font-bold text-gray-700 mb-4">Metode Pembayaran</p>
-                <div class="space-y-3">
-                    <label class="flex items-center justify-between p-4 border rounded-xl cursor-pointer hover:bg-gray-50 transition">
-                        <div class="flex items-center gap-3">
-                            <input type="radio" name="payment" class="w-4 h-4 text-[#2D6A4F]">
-                            <span class="text-sm font-medium">Virtual Account (VA)</span>
-                        </div>
-                        <i class="fas fa-university text-gray-400"></i>
-                    </label>
-                    <label class="flex items-center justify-between p-4 border rounded-xl cursor-pointer hover:bg-gray-50 transition">
-                        <div class="flex items-center gap-3">
-                            <input type="radio" name="payment" class="w-4 h-4 text-[#2D6A4F]">
-                            <span class="text-sm font-medium">QRIS</span>
-                        </div>
-                        <i class="fas fa-qrcode text-gray-400"></i>
-                    </label>
+            <div class="space-y-4">
+                <div id="placeholder-text" class="flex justify-between text-gray-600 border-b pb-4 italic">
+                    <span>Silahkan pilih lahan & bibit di atas untuk mulai memesan</span>
+                    <span class="font-bold text-gray-800">Rp 0</span>
+                </div>
+
+                <div id="detail-pesanan" class="hidden space-y-4 border-b pb-4">
+                    <div class="flex justify-between text-gray-700">
+                        <span id="label-bibit" class="font-bold text-lg text-[#2D6A4F]">Nama Bibit</span>
+                        <span id="harga-item" class="font-bold">Rp 0</span>
+                    </div>
+                    <div class="flex justify-between text-sm text-gray-500">
+                        <span>Terpilih untuk Lahan:</span>
+                        <span id="info-lahan-terpilih" class="font-bold text-gray-700">-</span>
+                    </div>
+                    <div class="flex justify-between text-sm text-gray-500 italic">
+                        <span>Jatah Lahan (10% dari luas)</span>
+                        <span id="berat-estimasi" class="font-bold text-orange-600">0 Kg</span>
+                    </div>
+                </div>
+                
+                <div class="flex justify-between items-center py-2">
+                    <span class="text-lg font-bold text-gray-800">Total Pembayaran</span>
+                    <span id="total-harga" class="text-2xl font-bold text-[#2D6A4F]">Rp 0</span>
+                </div>
+
+                <div class="mt-8">
+                    <p class="font-bold text-gray-700 mb-4">Metode Pembayaran</p>
+                    <div class="space-y-3">
+                        <label class="flex items-center justify-between p-4 border rounded-xl cursor-pointer hover:bg-gray-50 transition">
+                            <div class="flex items-center gap-3">
+                                <input type="radio" name="metode_pembayaran" value="Virtual Account" required class="w-4 h-4 text-[#2D6A4F]">
+                                <span class="text-sm font-medium">Virtual Account (VA)</span>
+                            </div>
+                            <i class="fas fa-university text-gray-400"></i>
+                        </label>
+                        <label class="flex items-center justify-between p-4 border rounded-xl cursor-pointer hover:bg-gray-50 transition">
+                            <div class="flex items-center gap-3">
+                                <input type="radio" name="metode_pembayaran" value="QRIS" required class="w-4 h-4 text-[#2D6A4F]">
+                                <span class="text-sm font-medium">QRIS</span>
+                            </div>
+                            <i class="fas fa-qrcode text-gray-400"></i>
+                        </label>
+                    </div>
+                </div>
+
+                <p class="text-center text-[10px] text-gray-400 mt-6 italic">Pembayaran diproses otomatis oleh Midtrans</p>
+
+                <div class="flex justify-end mt-6">
+                    <button type="submit" id="btn-bayar" class="bg-gray-400 text-white font-bold py-3 px-8 rounded-lg shadow-lg transition duration-300 cursor-not-allowed" disabled>
+                        Konfirmasi & Bayar Sekarang
+                    </button>
                 </div>
             </div>
-
-            <p class="text-center text-[10px] text-gray-400 mt-6 italic">Pembayaran diproses otomatis oleh Midtrans</p>
-
-            <div class="flex justify-end mt-6">
-                <button class="bg-[#007BFF] hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-lg shadow-lg transition duration-300">
-                    Konfirmasi & Bayar Sekarang
-                </button>
-            </div>
-        </div>
+        </form>
     </div>
 </div>
+
+<script>
+    function resetPilihanBibit() {
+        document.querySelectorAll('.bibit-card').forEach(card => {
+            card.classList.remove('border-green-500', 'ring-2', 'ring-green-200');
+        });
+        document.getElementById('placeholder-text').classList.remove('hidden');
+        document.getElementById('detail-pesanan').classList.add('hidden');
+        document.getElementById('btn-bayar').classList.add('bg-gray-400', 'cursor-not-allowed');
+        document.getElementById('btn-bayar').disabled = true;
+        document.getElementById('total-harga').innerText = 'Rp 0';
+        
+        // Kosongkan input hidden
+        document.getElementById('input-lahan-id').value = '';
+        document.getElementById('input-bibit-id').value = '';
+    }
+
+    function pilihBibit(id, nama, harga) {
+        const selectLahan = document.getElementById('pilih-lahan');
+        const selectedOption = selectLahan.options[selectLahan.selectedIndex];
+        
+        if (!selectedOption.value) {
+            alert('Silakan pilih lahan yang akan ditanami terlebih dahulu!');
+            return;
+        }
+
+        const luasLahan = parseFloat(selectedOption.getAttribute('data-luas'));
+        const jatahTambahan = parseFloat(selectedOption.getAttribute('data-tambahan'));
+        
+        const estimasiBerat = (luasLahan / 100) * 10 + jatahTambahan;
+        const total = estimasiBerat * harga;
+
+        // Update Input Hidden untuk Form
+        document.getElementById('input-lahan-id').value = selectedOption.value;
+        document.getElementById('input-bibit-id').value = id;
+        document.getElementById('input-jumlah-beli').value = estimasiBerat;
+        document.getElementById('input-total-harga').value = total;
+
+        // Update Tampilan Ringkasan
+        document.getElementById('placeholder-text').classList.add('hidden');
+        document.getElementById('detail-pesanan').classList.remove('hidden');
+        
+        document.getElementById('label-bibit').innerText = 'Bibit ' + nama;
+        document.getElementById('info-lahan-terpilih').innerText = selectedOption.text;
+        document.getElementById('berat-estimasi').innerText = estimasiBerat + ' Kg';
+        document.getElementById('harga-item').innerText = 'Rp ' + harga.toLocaleString('id-ID') + ' /kg';
+        document.getElementById('total-harga').innerText = 'Rp ' + total.toLocaleString('id-ID');
+
+        // Aktifkan Tombol
+        const btn = document.getElementById('btn-bayar');
+        btn.classList.remove('bg-gray-400', 'cursor-not-allowed');
+        btn.classList.add('bg-[#2D6A4F]', 'hover:bg-[#1B4332]');
+        btn.disabled = false;
+
+        // Efek visual pada card
+        document.querySelectorAll('.bibit-card').forEach(card => {
+            card.classList.remove('border-green-500', 'ring-2', 'ring-green-200');
+        });
+        event.currentTarget.classList.add('border-green-500', 'ring-2', 'ring-green-200');
+    }
+</script>
 @endsection

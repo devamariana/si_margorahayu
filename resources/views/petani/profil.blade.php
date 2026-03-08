@@ -1,6 +1,6 @@
 @extends('layouts.petani_layout')
 
-@section('title', 'Profil & Lahan')
+@section('title', 'Profil Saya')
 
 @section('content')
 <div class="max-w-4xl mx-auto space-y-6">
@@ -17,7 +17,7 @@
             <div class="flex items-center">
                 <i class="fas fa-check-double text-green-500 mr-3 text-xl"></i>
                 <p class="text-sm text-green-700">
-                    <strong>Selamat!</strong> Akun Anda telah <span class="font-bold uppercase">Terverifikasi</span>. Data lahan dan identitas Anda sudah disetujui oleh Ketua.
+                    <strong>Selamat!</strong> Akun Anda telah <span class="font-bold uppercase">Terverifikasi</span>. Identitas dan berkas Anda sudah disetujui oleh Ketua.
                 </p>
             </div>
         </div>
@@ -26,7 +26,7 @@
             <div class="flex items-center">
                 <i class="fas fa-clock text-orange-400 mr-3 text-xl"></i>
                 <p class="text-sm text-orange-700">
-                    <strong>Perhatian:</strong> Akun Anda sedang dalam status <span class="font-bold uppercase">Menunggu Verifikasi</span>. Pastikan data lahan dan berkas KTP/KK sudah benar agar segera disetujui oleh Ketua.
+                    <strong>Perhatian:</strong> Akun Anda sedang dalam status <span class="font-bold uppercase">Menunggu Verifikasi</span>. Pastikan data identitas dan berkas KTP/KK sudah benar.
                 </p>
             </div>
         </div>
@@ -38,7 +38,7 @@
         <div class="bg-white rounded-xl shadow-sm border border-green-100 overflow-hidden">
             <div class="bg-[#2D6A4F] px-6 py-3">
                 <h3 class="text-white font-bold flex items-center">
-                    <i class="fas fa-id-card mr-2"></i> Informasi Lahan & Identitas
+                    <i class="fas fa-user-id mr-2"></i> Informasi Identitas Diri
                 </h3>
             </div>
             <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -58,13 +58,15 @@
                     <label class="block text-sm font-bold text-gray-700 mb-2">Nomor HP / WhatsApp</label>
                     <input type="text" name="no_hp" value="{{ $petani->no_hp }}" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2D6A4F] outline-none">
                 </div>
-                <div>
-                    <label class="block text-sm font-bold text-gray-700 mb-2">Luas Lahan (m²)</label>
-                    <div class="relative">
-                        <input type="number" name="luas_lahan" value="{{ $petani->luas_lahan }}" placeholder="Contoh: 500" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2D6A4F] outline-none">
-                        <span class="absolute right-4 top-3 text-gray-400 font-bold">m²</span>
-                    </div>
+                
+                {{-- INFO: Luas lahan sekarang dikelola di menu terpisah --}}
+                <div class="md:col-span-2 bg-blue-50 p-4 rounded-xl border border-blue-100 flex items-center gap-4">
+                    <i class="fas fa-info-circle text-blue-500 text-xl"></i>
+                    <p class="text-xs text-blue-700">
+                        Data luas lahan sekarang dikelola secara terpisah untuk mendukung kepemilikan lebih dari satu lahan. Silakan buka menu <strong>"Data Lahan"</strong> untuk memperbarui aset pertanian Anda.
+                    </p>
                 </div>
+
                 <div class="md:col-span-2">
                     <label class="block text-sm font-bold text-gray-700 mb-2">Alamat Lengkap</label>
                     <textarea name="alamat" rows="2" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2D6A4F] outline-none">{{ $petani->alamat }}</textarea>
@@ -108,7 +110,7 @@
 
         <div class="flex justify-end">
             <button type="submit" class="bg-[#2D6A4F] hover:bg-[#1B4332] text-white font-bold py-3 px-10 rounded-xl shadow-lg transform hover:-translate-y-1 transition duration-300 flex items-center">
-                <i class="fas fa-save mr-2"></i> SIMPAN PERUBAHAN DATA
+                <i class="fas fa-save mr-2"></i> SIMPAN PERUBAHAN PROFIL
             </button>
         </div>
     </form>

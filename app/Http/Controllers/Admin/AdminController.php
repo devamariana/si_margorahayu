@@ -4,19 +4,44 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\User; 
-use App\Models\Petani; // Wajib panggil model Petani
+use App\Models\Petani; 
+use App\Models\Bibit; 
+use App\Models\PindahJatah; // Tambahkan ini agar pemanggilan model lebih simpel
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB; // Tambahkan untuk proses hapus yang aman
+use Illuminate\Support\Facades\DB; 
 
 class AdminController extends Controller
 {
+    /**
+     * Menampilkan Dashboard Utama Admin dengan data asli
+     */
+    public function index()
+    {
+        // 1. Menghitung total semua petani di tabel petanis
+        $totalPetani = Petani::count();
+
+        // 2. Menghitung petani yang statusnya masih 'pending' (butuh verifikasi)
+        $totalPending = Petani::where('status', 'pending')->count();
+
+        // 3. Menghitung total stok bibit dari semua jenis bibit yang ada
+        $totalStok = Bibit::sum('stok');
+
+        // 4. Mengambil 5 data petani terbaru untuk ditampilkan di tabel dashboard
+        $petaniTerbaru = Petani::with('user')->latest()->take(5)->get();
+
+        return view('layouts.admin.dashboard', compact(
+            'totalPetani', 
+            'totalPending', 
+            'totalStok', 
+            'petaniTerbaru'
+        ));
+    }
+
     /**
      * Menampilkan daftar semua petani untuk Admin
      */
     public function dataPetani()
     {
-        // PERBAIKAN: Ambil data dari model Petani, lalu tarik data User-nya (username)
-        // Kita urutkan berdasarkan status 'pending' agar muncul di atas
         $petanis = Petani::with('user')
                         ->orderByRaw("FIELD(status, 'pending', 'disetujui', 'ditolak')")
                         ->get();
@@ -29,14 +54,12 @@ class AdminController extends Controller
      */
     public function verifikasiPetani(Request $request, $id)
     {
-        // PERBAIKAN: Cari di model Petani menggunakan ID profilnya
         $petani = Petani::find($id);
 
         if (!$petani) {
             return back()->with('error', 'Data petani tidak ditemukan.');
         }
 
-        // Update status di tabel petanis
         $petani->status = $request->status;
         $petani->save();
 
@@ -44,19 +67,16 @@ class AdminController extends Controller
     }
 
     /**
-     * Menghapus Petani (Menghapus di 2 tabel sekaligus)
+     * Menghapus Petani (Menghapus di 2 tabel sekaligus secara aman)
      */
     public function hapusPetani($id)
     {
-        // PERBAIKAN: Gunakan transaksi agar data di tabel users dan petanis terhapus semua
         DB::beginTransaction();
         try {
             $petani = Petani::find($id);
             
             if ($petani) {
-                // Hapus akun di tabel users
                 User::where('id', $petani->user_id)->delete();
-                // Hapus profil di tabel petanis
                 $petani->delete();
 
                 DB::commit();
@@ -66,7 +86,61 @@ class AdminController extends Controller
             return back()->with('error', 'Data tidak ditemukan.');
         } catch (\Exception $e) {
             DB::rollback();
-            return back()->with('error', 'Gagal menghapus data.');
+            return back()->with('error', 'Gagal menghapus data: ' . $e->getMessage());
         }
+    }
+
+    /**
+     * Menampilkan Halaman Fitur Pindah Jatah (Revisi Dosen)
+     */
+    public function pindahJatah()
+    {
+        // Hanya ambil petani yang sudah terverifikasi (disetujui)
+        $petanis = Petani::where('status', 'disetujui')->get();
+        $riwayatPindah = PindahJatah::with(['pengirim', 'penerima'])->latest()->get();
+        
+        return view('layouts.admin.pindah_jatah', compact('petanis', 'riwayatPindah'));
+    }
+
+    /**
+     * Memproses Perpindahan Jatah Antar Petani
+     */
+    public function prosesPindahJatah(Request $request)
+    {
+        $request->validate([
+            'pengirim_id' => 'required',
+            'penerima_id' => 'required|different:pengirim_id',
+            'jumlah_kg' => 'required|numeric|min:1',
+        ]);
+
+        $pengirim = Petani::findOrFail($request->pengirim_id);
+        $penerima = Petani::findOrFail($request->penerima_id);
+
+        // Logika Hitung Sisa Jatah Pengirim (Lahan + Tambahan)
+        $jatahLahan = ($pengirim->luas_lahan / 100) * 10;
+        $totalSisaJatah = $jatahLahan + ($pengirim->jatah_tambahan ?? 0);
+
+        if ($totalSisaJatah < $request->jumlah_kg) {
+            return back()->with('error', 'Jatah pengirim tidak mencukupi untuk dipindahkan!');
+        }
+
+        // Jalankan Transaction agar jika satu gagal, semua batal (Database Integrity)
+        DB::transaction(function () use ($pengirim, $penerima, $request) {
+            // 1. Kurangi jatah pengirim
+            $pengirim->decrement('jatah_tambahan', $request->jumlah_kg);
+            
+            // 2. Tambah jatah penerima
+            $penerima->increment('jatah_tambahan', $request->jumlah_kg);
+
+            // 3. Catat Riwayat/Log
+            PindahJatah::create([
+                'pengirim_id' => $request->pengirim_id,
+                'penerima_id' => $request->penerima_id,
+                'jumlah_kg' => $request->jumlah_kg,
+                'alasan' => $request->alasan
+            ]);
+        });
+
+        return back()->with('success', 'Jatah sebesar ' . $request->jumlah_kg . ' kg berhasil dipindahkan!');
     }
 }

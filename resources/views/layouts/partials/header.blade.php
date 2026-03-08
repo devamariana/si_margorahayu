@@ -7,15 +7,22 @@
     
     <div class="flex items-center gap-4">
         <div class="text-right hidden sm:block">
-            <p class="text-sm font-bold text-[#2D6A4F]">{{ Auth::user()->name }}</p>
+            {{-- Menampilkan Nama Lengkap dari Profil jika ada, jika tidak pakai username --}}
+            <p class="text-sm font-bold text-[#2D6A4F]">
+                {{ $petani->nama_lengkap ?? Auth::user()->username }}
+            </p>
             
-            {{-- LOGIKA STATUS VERIFIKASI - DISINKRONKAN KE KATA 'disetujui' --}}
-            @if(Auth::user()->status == 'disetujui')
-                <p class="text-xs text-green-600 font-bold italic">
-                    <i class="fas fa-check-circle mr-1"></i>Status: Terverifikasi
+            {{-- LOGIKA STATUS VERIFIKASI - Disinkronkan ke variabel $petani --}}
+            @if(isset($petani) && $petani->status == 'disetujui')
+                <p class="text-[10px] text-green-600 font-bold italic flex items-center justify-end">
+                    <span class="relative flex h-2 w-2 mr-1">
+                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                        <span class="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+                    </span>
+                    Status: Terverifikasi
                 </p>
             @else
-                <p class="text-xs text-orange-600 font-semibold italic">
+                <p class="text-[10px] text-orange-600 font-semibold italic flex items-center justify-end">
                     <i class="fas fa-clock mr-1"></i>Status: Menunggu Verifikasi
                 </p>
             @endif

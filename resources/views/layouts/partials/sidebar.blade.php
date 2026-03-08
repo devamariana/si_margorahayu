@@ -12,9 +12,16 @@
             <i class="fas fa-th-large mr-3 group-hover:scale-110 transition"></i> Dashboard
         </a>
 
+        {{-- MENU PROFIL (DIPECAH) --}}
         <a href="{{ route('petani.profil') }}" 
            class="flex items-center py-3 px-4 rounded-xl transition group {{ request()->routeIs('petani.profil') ? 'bg-[#40916C] shadow-inner font-bold border-l-4 border-[#D8F3DC]' : 'text-green-100 hover:bg-[#40916C]' }}">
-            <i class="fas fa-user-circle mr-3 group-hover:scale-110 transition"></i> Profil & Lahan
+            <i class="fas fa-user-circle mr-3 group-hover:scale-110 transition"></i> Profil Saya
+        </a>
+
+        {{-- MENU LAHAN (BARU) --}}
+        <a href="{{ route('petani.lahan') }}" 
+           class="flex items-center py-3 px-4 rounded-xl transition group {{ request()->routeIs('petani.lahan') ? 'bg-[#40916C] shadow-inner font-bold border-l-4 border-[#D8F3DC]' : 'text-green-100 hover:bg-[#40916C]' }}">
+            <i class="fas fa-map-marked-alt mr-3 group-hover:scale-110 transition"></i> Data Lahan
         </a>
 
         <a href="{{ route('petani.beli_bibit') }}" 

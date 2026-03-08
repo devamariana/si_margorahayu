@@ -13,7 +13,7 @@
 
     <div class="flex flex-col md:flex-row justify-between items-center gap-4">
         <div class="relative w-full md:w-96">
-            <input type="text" 
+            <input type="text" id="searchInput" onkeyup="searchPetani()"
                    placeholder="Cari nama petani..." 
                    class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2D6A4F] focus:outline-none shadow-sm">
             <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
@@ -22,7 +22,7 @@
 
     <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
         <div class="overflow-x-auto">
-            <table class="w-full text-left border-collapse">
+            <table class="w-full text-left border-collapse" id="petaniTable">
                 <thead class="bg-gray-50 text-gray-600 uppercase text-[10px] font-bold tracking-wider">
                     <tr>
                         <th class="p-4 border-b">No</th>
@@ -40,16 +40,18 @@
                     <tr class="hover:bg-gray-50 transition">
                         <td class="p-4 text-gray-500">{{ $index + 1 }}</td>
                         
-                        {{-- PERBAIKAN: Ambil Username dari relasi user --}}
                         <td class="p-4 font-mono text-blue-600">
                             {{ $p->user->username ?? 'User Terhapus' }}
                         </td>
 
-                        <td class="p-4 font-bold text-gray-800 uppercase">
+                        <td class="p-4 font-bold text-gray-800 uppercase name-field">
                             {{ $p->nama_lengkap ?? '-' }}
                         </td>
                         
-                        <td class="p-4 text-gray-600 font-mono">{{ $p->nik ?? '-' }}</td>
+                        {{-- PERBAIKAN NIK: Pastikan memanggil variabel $p->nik --}}
+                        <td class="p-4 text-gray-600 font-mono">
+                            {{ $p->nik ?? 'Belum Diisi' }}
+                        </td>
                         
                         <td class="p-4 font-bold text-[#2D6A4F]">{{ $p->luas_lahan ?? '0' }} m²</td>
                         
@@ -61,30 +63,44 @@
                             @endif
                         </td>
                         
-                        {{-- KOLOM FOTO --}}
-                        <td class="p-4 text-center">
-                            <div class="flex justify-center gap-1">
+                        {{-- PERBAIKAN KOLOM IDENTITAS --}}
+                        <td class="p-4">
+                            <div class="flex justify-center gap-3">
+                                {{-- TOMBOL KTP --}}
                                 @if($p->foto_ktp)
-                                    <a href="{{ asset('uploads/identitas/' . $p->foto_ktp) }}" target="_blank" title="Lihat KTP" class="p-1 bg-blue-500 text-white rounded hover:bg-blue-600">
-                                        <i class="fas fa-id-card"></i>
+                                    <a href="{{ asset('uploads/identitas/' . $p->foto_ktp) }}" target="_blank" 
+                                       class="w-10 h-10 bg-blue-600 hover:bg-blue-700 text-white rounded-lg flex items-center justify-center shadow-md transition-all active:scale-95" 
+                                       title="Buka Foto KTP">
+                                        <i class="fas fa-id-card text-lg"></i>
                                     </a>
+                                @else
+                                    <div class="w-10 h-10 bg-gray-100 text-gray-300 rounded-lg border border-dashed border-gray-300 flex items-center justify-center">
+                                        <i class="fas fa-id-card text-lg"></i>
+                                    </div>
                                 @endif
+
+                                {{-- TOMBOL KK --}}
                                 @if($p->foto_kk)
-                                    <a href="{{ asset('uploads/identitas/' . $p->foto_kk) }}" target="_blank" title="Lihat KK" class="p-1 bg-indigo-500 text-white rounded hover:bg-indigo-600">
-                                        <i class="fas fa-users"></i>
+                                    <a href="{{ asset('uploads/identitas/' . $p->foto_kk) }}" target="_blank" 
+                                       class="w-10 h-10 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg flex items-center justify-center shadow-md transition-all active:scale-95" 
+                                       title="Buka Foto KK">
+                                        <i class="fas fa-file-invoice text-lg"></i>
                                     </a>
+                                @else
+                                    <div class="w-10 h-10 bg-gray-100 text-gray-400 rounded-lg border border-dashed border-gray-300 flex items-center justify-center">
+                                        <i class="fas fa-file-invoice text-lg"></i>
+                                    </div>
                                 @endif
                             </div>
                         </td>
 
                         <td class="p-4 text-center">
                             <div class="flex justify-center gap-2">
-                                {{-- Tombol ACC --}}
                                 @if($p->status != 'disetujui')
                                 <form action="{{ route('admin.verifikasi_petani', $p->id) }}" method="POST">
                                     @csrf
                                     <input type="hidden" name="status" value="disetujui">
-                                    <button type="submit" title="Setujui Petani" class="w-8 h-8 bg-orange-500 hover:bg-orange-600 text-white rounded shadow-sm flex items-center justify-center transition">
+                                    <button type="submit" title="Setujui Petani" class="w-8 h-8 bg-[#2D6A4F] hover:bg-green-700 text-white rounded shadow-sm flex items-center justify-center transition">
                                         <i class="fas fa-check text-xs"></i>
                                     </button>
                                 </form>
@@ -94,8 +110,7 @@
                                 </button>
                                 @endif
 
-                                {{-- Tombol Hapus --}}
-                                <form action="{{ route('admin.hapus_petani', $p->id) }}" method="POST" onsubmit="return confirm('Yakin ingin menghapus petani ini? Akun login juga akan terhapus.')">
+                                <form action="{{ route('admin.hapus_petani', $p->id) }}" method="POST" onsubmit="return confirm('Yakin ingin menghapus petani ini?')">
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" title="Hapus" class="w-8 h-8 bg-red-500 hover:bg-red-600 text-white rounded shadow-sm flex items-center justify-center transition">
@@ -111,4 +126,16 @@
         </div>
     </div>
 </div>
+
+<script>
+    function searchPetani() {
+        let input = document.getElementById("searchInput").value.toLowerCase();
+        let rows = document.querySelectorAll("#petaniTable tbody tr");
+
+        rows.forEach(row => {
+            let name = row.querySelector(".name-field").innerText.toLowerCase();
+            row.style.display = name.includes(input) ? "" : "none";
+        });
+    }
+</script>
 @endsection

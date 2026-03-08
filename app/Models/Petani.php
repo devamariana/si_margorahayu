@@ -12,10 +12,10 @@ class Petani extends Model
     // Nama tabel di SQLyog kamu
     protected $table = 'petanis';
 
-    // Daftar kolom yang boleh diisi (sesuai SQLyog kamu yang baru)
+    // Daftar kolom yang boleh diisi
     protected $fillable = [
         'user_id',
-        'no_hp',
+        'no_hp',         // TAMBAHKAN INI agar no telp masuk database
         'nik',
         'nama_lengkap',
         'alamat',
@@ -23,6 +23,7 @@ class Petani extends Model
         'foto_ktp',
         'foto_kk',
         'status',
+        'jatah_tambahan', // WAJIB ADA agar fitur pindah jatah Admin tersimpan
     ];
 
     // Relasi balik ke User (Satu profil ini punya satu akun login)

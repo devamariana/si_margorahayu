@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Bibit;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\DB;
 
 class BibitController extends Controller
 {
@@ -20,41 +21,67 @@ class BibitController extends Controller
             'nama_bibit' => 'required',
             'stok' => 'required|numeric',
             'harga_subsidi' => 'required|numeric',
+            'sumber_pasokan' => 'required',
             'gambar' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
         ]);
 
-        $data = $request->only(['nama_bibit', 'jenis', 'stok', 'harga_subsidi', 'deskripsi']);
+        $data = $request->only(['nama_bibit', 'jenis', 'stok', 'harga_subsidi', 'deskripsi', 'sumber_pasokan']);
         
         if ($request->hasFile('gambar')) {
             $file = $request->file('gambar');
             $namaFile = 'bibit_' . time() . '.' . $file->getClientOriginalExtension();
-            
-            // Tentukan path folder
             $tujuanPath = public_path('uploads/bibit');
 
-            // Cek apakah folder sudah ada, kalau belum, buat otomatis
             if (!File::isDirectory($tujuanPath)) {
                 File::makeDirectory($tujuanPath, 0777, true, true);
             }
             
-            // Pindahkan file
             $file->move($tujuanPath, $namaFile);
             
-            $data['gambar'] = $namaFile;
+            // PASTIKAN: Jika di database kolomnya bernama 'foto', gunakan 'foto'. 
+            // Jika bernama 'gambar', gunakan 'gambar'. 
+            // Di sini saya asumsikan 'gambar' sesuai kodingan awalmu.
+            $data['gambar'] = $namaFile; 
         }
 
         $data['status'] = $request->stok > 0 ? 'tersedia' : 'habis';
 
         Bibit::create($data);
 
-        /**
-         * PERBAIKAN DI SINI:
-         * Kita gunakan redirect ke route index agar session 'notif_petani' 
-         * tersimpan di sistem dan bisa muncul saat kamu buka dashboard petani.
-         */
         return redirect()->route('admin.data_bibit')
-            ->with('success', 'Data bibit berhasil ditambahkan!')
+            ->with('success', 'Master Data Masuk Berhasil Dicatat!')
             ->with('notif_petani', 'Kabar gembira! Bibit ' . $request->nama_bibit . ' terbaru sudah tersedia. Cek sekarang!');
+    }
+
+    public function update(Request $request, $id)
+    {
+        $request->validate([
+            'nama_bibit' => 'required',
+            'stok' => 'required|numeric',
+            'harga_subsidi' => 'required|numeric',
+            'sumber_pasokan' => 'required',
+            'gambar' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+        ]);
+
+        $bibit = Bibit::findOrFail($id);
+        $data = $request->only(['nama_bibit', 'jenis', 'stok', 'harga_subsidi', 'deskripsi', 'sumber_pasokan']);
+
+        if ($request->hasFile('gambar')) {
+            if ($bibit->gambar) {
+                $oldPath = public_path('uploads/bibit/' . $bibit->gambar);
+                if (File::exists($oldPath)) { File::delete($oldPath); }
+            }
+
+            $file = $request->file('gambar');
+            $namaFile = 'bibit_' . time() . '.' . $file->getClientOriginalExtension();
+            $file->move(public_path('uploads/bibit'), $namaFile);
+            $data['gambar'] = $namaFile;
+        }
+
+        $data['status'] = $request->stok > 0 ? 'tersedia' : 'habis';
+        $bibit->update($data);
+
+        return redirect()->route('admin.data_bibit')->with('success', 'Data Master Bibit berhasil diperbarui!');
     }
 
     public function destroy($id)

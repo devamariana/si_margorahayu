@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Models;
+namespace App\Models; // PERBAIKAN: Cukup gunakan satu namespace Models saja
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -16,11 +16,11 @@ class Bibit extends Model
 
     /**
      * Kolom yang boleh diisi secara massal (Mass Assignable)
-     * Pastikan semua kolom ini sama persis dengan yang ada di SQLyog
      */
     protected $fillable = [
         'nama_bibit', 
         'jenis', 
+        'sumber_pasokan', // TAMBAHKAN INI agar Master Data Masuk tersimpan
         'stok', 
         'harga_subsidi', 
         'deskripsi', 
@@ -29,14 +29,28 @@ class Bibit extends Model
     ];
 
     /**
-     * Secara default Laravel menganggap primary key adalah 'id'.
-     * Jika di SQLyog kamu namanya bukan 'id', silakan ganti di bawah ini.
+     * Menjamin tipe data stok dan harga selalu angka
+     */
+    protected $casts = [
+        'stok' => 'integer',
+        'harga_subsidi' => 'integer',
+    ];
+
+    /**
+     * Primary Key
      */
     protected $primaryKey = 'id';
 
     /**
-     * Aktifkan timestamps jika kamu memiliki kolom created_at dan updated_at di SQLyog.
-     * Ini penting agar fungsi Bibit::latest() bisa bekerja untuk notifikasi.
+     * Aktifkan timestamps untuk mencatat Tanggal Masuk otomatis
      */
     public $timestamps = true;
+
+    /**
+     * Relasi ke Tabel Transaksi
+     */
+    public function transaksis()
+    {
+        return $this->hasMany(Transaksi::class, 'bibit_id');
+    }
 }

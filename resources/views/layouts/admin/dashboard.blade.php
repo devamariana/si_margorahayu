@@ -8,15 +8,18 @@
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-100 text-center">
             <p class="text-gray-500 text-xs font-bold uppercase mb-2">Total Petani</p>
-            <p class="text-3xl font-bold text-gray-800 tracking-tight">120</p>
+            {{-- DATA ASLI DARI DATABASE --}}
+            <p class="text-3xl font-bold text-gray-800 tracking-tight">{{ $totalPetani }}</p>
         </div>
         <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-100 text-center">
             <p class="text-gray-500 text-xs font-bold uppercase mb-2">Stok Bibit</p>
-            <p class="text-3xl font-bold text-gray-800 tracking-tight">5000 kg</p>
+            {{-- DATA ASLI DARI DATABASE --}}
+            <p class="text-3xl font-bold text-gray-800 tracking-tight">{{ number_format($totalStok) }} kg</p>
         </div>
         <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-100 text-center">
-            <p class="text-gray-500 text-xs font-bold uppercase mb-2">Transaksi Berhasil</p>
-            <p class="text-3xl font-bold text-gray-800 tracking-tight">85</p>
+            <p class="text-gray-500 text-xs font-bold uppercase mb-2">Menunggu Verifikasi</p>
+            {{-- DATA ASLI DARI DATABASE (Tadinya Transaksi Berhasil) --}}
+            <p class="text-3xl font-bold text-orange-600 tracking-tight">{{ $totalPending }}</p>
         </div>
     </div>
 
@@ -39,27 +42,36 @@
     {{-- Tabel Transaksi --}}
     <div class="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden">
         <div class="p-4 bg-gray-50 border-b border-gray-100">
-            <h3 class="text-sm font-bold text-gray-700">5 Transaksi Terbaru (Panel Admin)</h3>
+            <h3 class="text-sm font-bold text-gray-700">Petani Baru Terdaftar (Panel Admin)</h3>
         </div>
         <div class="overflow-x-auto text-xs">
             <table class="w-full text-left">
                 <thead class="bg-gray-50 text-gray-500 uppercase font-bold">
                     <tr>
-                        <th class="p-4 border-b">Tanggal</th>
+                        <th class="p-4 border-b">Tanggal Daftar</th>
                         <th class="p-4 border-b">Nama Petani</th>
-                        <th class="p-4 border-b">Jenis Bibit</th>
-                        <th class="p-4 border-b">Total Harga</th>
+                        <th class="p-4 border-b">Username</th>
+                        <th class="p-4 border-b">Luas Lahan</th>
                         <th class="p-4 border-b">Status</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-100">
+                    {{-- LOOPING DATA PETANI TERBARU --}}
+                    @forelse($petaniTerbaru as $p)
                     <tr class="hover:bg-gray-50 transition">
-                        <td class="p-4 text-gray-600">2025-01-15</td>
-                        <td class="p-4 font-medium text-gray-800 uppercase">Budi Santoso</td>
-                        <td class="p-4">Padi Unggul</td>
-                        <td class="p-4 font-bold text-gray-800">Rp 500.000</td>
-                        <td class="p-4 italic font-bold text-green-600">Lunas</td>
+                        <td class="p-4 text-gray-600">{{ $p->created_at->format('Y-m-d') }}</td>
+                        <td class="p-4 font-medium text-gray-800 uppercase">{{ $p->nama_lengkap }}</td>
+                        <td class="p-4 text-blue-600">{{ $p->user->username ?? '-' }}</td>
+                        <td class="p-4 font-bold text-gray-800">{{ $p->luas_lahan }} m²</td>
+                        <td class="p-4 italic font-bold {{ $p->status == 'pending' ? 'text-orange-500' : 'text-green-600' }}">
+                            {{ strtoupper($p->status) }}
+                        </td>
                     </tr>
+                    @empty
+                    <tr>
+                        <td colspan="5" class="p-4 text-center text-gray-500">Belum ada data petani terdaftar.</td>
+                    </tr>
+                    @endforelse
                 </tbody>
             </table>
         </div>

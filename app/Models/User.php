@@ -10,12 +10,13 @@ class User extends Authenticatable
 {
     use HasFactory, Notifiable;
 
-    // 1. PASTIKAN INI KE TABEL USERS (Bukan petanis lagi)
+    // 1. PASTIKAN INI KE TABEL USERS
     protected $table = 'users';
 
-    // 2. ISI HANYA UNTUK LOGIN
+    // 2. PERBAIKAN: Tambahkan 'email' agar bisa disimpan saat register
     protected $fillable = [
         'username', 
+        'email',    // Wajib ada untuk revisi dosen
         'password', 
         'role',
     ];

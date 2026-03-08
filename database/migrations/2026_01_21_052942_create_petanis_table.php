@@ -10,10 +10,17 @@ return new class extends Migration
     {
         Schema::create('petanis', function (Blueprint $table) {
             $table->id();
-            $table->string('username')->unique();
-            $table->string('no_hp')->unique();
-            $table->string('password');
-            $table->string('role')->default('petani'); // Menambah kolom role
+            // BARIS INI WAJIB ADA:
+            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
+            
+            $table->string('nama_lengkap');
+            $table->string('no_hp');
+            $table->string('nik')->default('-');
+            $table->text('alamat')->nullable();
+            $table->decimal('luas_lahan', 10, 2)->default(0);
+            $table->enum('status', ['pending', 'aktif', 'nonaktif'])->default('pending');
+            $table->string('foto_ktp')->nullable();
+            $table->string('foto_kk')->nullable();
             $table->timestamps();
         });
     }
